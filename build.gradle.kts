@@ -1,4 +1,4 @@
-// Build by running `gradle buildFatJar`
+// Build by running `gradle buildFatJar`.
 
 val ktor_version: String by project
 val kotlin_version: String by project
