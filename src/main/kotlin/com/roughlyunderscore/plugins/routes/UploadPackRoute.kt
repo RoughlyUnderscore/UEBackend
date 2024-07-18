@@ -16,7 +16,6 @@ package com.roughlyunderscore.plugins.routes
 
 import com.roughlyunderscore.*
 import com.roughlyunderscore.utils.asPack
-import com.roughlyunderscore.utils.isValidNamespace
 import com.roughlyunderscore.utils.saveCodeWithId
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -36,7 +35,7 @@ fun Route.uploadPackRoute() {
 
         val name = pack.metadata.name
 
-        if (pack.enchantments.any { !isValidNamespace(it.name.lowercase()) }) {
+        if (pack.enchantments.any { it.name.lowercase().invalidName() }) {
           return@validateUpload HttpStatusCode.BadRequest to "Invalid key in ${pack.enchantments.map {it.name}}. Must be [A-Za-z0-9/._-]."
         }
 
@@ -57,3 +56,6 @@ fun Route.uploadPackRoute() {
     }
   }
 }
+
+private val VALID_REGEX = """[a-z0-9. _-]+""".toRegex()
+private fun String.invalidName() = !VALID_REGEX.matches(this)

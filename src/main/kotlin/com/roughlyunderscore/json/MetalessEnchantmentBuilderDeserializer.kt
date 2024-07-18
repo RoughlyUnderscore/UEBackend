@@ -18,9 +18,12 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.roughlyunderscore.data.server.*
+import com.roughlyunderscore.enums.EnchantmentPlayer
 import com.roughlyunderscore.ulib.data.Time
 import com.roughlyunderscore.ulib.data.TimeMeasurementUnit
+import com.roughlyunderscore.ulib.data.safeValueOr
 import com.roughlyunderscore.ulib.json.*
+import com.roughlyunderscore.ulib.text.normalize
 import org.bukkit.Material
 import java.lang.reflect.Type
 
@@ -40,7 +43,12 @@ object MetalessEnchantmentBuilderDeserializer : JsonDeserializer<BackendMetaless
     val description = json.anyArrayOfStringsStrict(DeserializationNames.Enchantment.DESCRIPTION) { emptyList() }
     val applicables = json.anyArrayOfStrings(DeserializationNames.Enchantment.APPLICABLES) ?: return null
     val forbidden = json.anyArrayOfStringsStrict(DeserializationNames.Enchantment.FORBIDDEN) { emptyList() }
+
     val seekers = json.anyArrayOfStringsStrict(DeserializationNames.Enchantment.SEEKERS) { emptyList() }
+    val targetPlayer = json.onAnyString(DeserializationNames.Enchantment.TARGET_PLAYER, { EnchantmentPlayer.FIRST } ) {
+      safeValueOr(this.normalize().uppercase(), EnchantmentPlayer.FIRST)
+    }!!
+
     val conflicts = json.onAnyArrayOfStrings(DeserializationNames.Enchantment.CONFLICTS) { mapNotNull { it } } ?: emptyList()
 
     val unique = json.anyBoolean(DeserializationNames.Enchantment.UNIQUE) ?: false
@@ -73,6 +81,7 @@ object MetalessEnchantmentBuilderDeserializer : JsonDeserializer<BackendMetaless
       .levels(levels)
       .restrictions(obtainment)
       .seekers(seekers)
+      .targetPlayer(targetPlayer)
       .unique(unique)
       .requiredEnchantments(requiredEnchantments)
       .worldBlacklist(worldBlacklist)
